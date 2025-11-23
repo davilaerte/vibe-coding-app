@@ -18,6 +18,7 @@ const feedbackSection = document.getElementById("feedback-section");
 const feedbackBtn = document.getElementById("feedback-btn");
 const feedbackStatusEl = document.getElementById("feedback-status");
 const commentEl = document.getElementById("comment");
+const matchSelectEl = document.getElementById("match-select");
 
 /**
  * Simple client-side sanitization:
@@ -48,6 +49,10 @@ function setStatus(message, color = "black") {
  * Helper to set feedback status text with color.
  */
 function setFeedbackStatus(message, color = "black") {
+  if (!feedbackStatusEl) {
+    console.warn("Elemento #feedback-status não encontrado.");
+    return;
+  }
   feedbackStatusEl.textContent = message;
   feedbackStatusEl.style.color = color;
 }
@@ -58,13 +63,14 @@ function setFeedbackStatus(message, color = "black") {
 async function handleSubmitClick() {
   const MAX_PROMPT_LENGTH = 1500;
 
-  console.log("Aqui foi!!")
-
   const level = levelEl.value;
   const prompt = promptEl.value.trim();
 
   if (!level || !prompt) {
-    setStatus("Preencha o nível e a sua descrição (prompt) antes de continuar.", "red");
+    setStatus(
+      "Preencha o nível e a sua descrição (prompt) antes de continuar.",
+      "red"
+    );
     return;
   }
 
@@ -81,12 +87,9 @@ async function handleSubmitClick() {
   feedbackSection.style.display = "none";
   setFeedbackStatus("");
 
-  console.log("Aqui foi!!  - 2")
-
   submitBtn.disabled = true;
 
   try {
-    console.log("Aqui foi!!  - request")
     const resp = await fetch(apiBase + "/api/submissions", {
       method: "POST",
       headers: {
@@ -123,9 +126,9 @@ async function handleSubmitClick() {
     // Show feedback section
     feedbackSection.style.display = "block";
     // Clear previous feedback
-    document
-      .querySelectorAll("input[name='match']")
-      .forEach((el) => (el.checked = false));
+    if (matchSelectEl) {
+      matchSelectEl.value = "";
+    }
     commentEl.value = "";
     setFeedbackStatus("");
   } catch (err) {
@@ -151,8 +154,17 @@ async function handleFeedbackClick() {
     return;
   }
 
-  const matchRadio = document.querySelector("input[name='match']:checked");
-  if (!matchRadio) {
+  if (!matchSelectEl) {
+    setFeedbackStatus(
+      "Não foi possível encontrar o campo de avaliação. Atualize a página e tente novamente.",
+      "red"
+    );
+    return;
+  }
+
+  const match = matchSelectEl.value; // "sim" | "parcial" | "nao"
+
+  if (!match) {
     setFeedbackStatus(
       "Selecione se a página correspondeu ou não ao que você imaginava.",
       "red"
@@ -160,7 +172,6 @@ async function handleFeedbackClick() {
     return;
   }
 
-  const match = matchRadio.value; // "sim" | "parcial" | "nao"
   const comment = commentEl.value.trim();
 
   setFeedbackStatus("Enviando sua avaliação...", "black");

@@ -134,23 +134,16 @@
     <section id="feedback-section" style="display: none;">
       <h2>Avaliação da página</h2>
 
-      <p>A página gerada correspondeu ao que você imaginava ao escrever o prompt?</p>
-
-      <div class="radio-group">
-        <label class="radio-option">
-          <input type="radio" name="match" value="sim" />
-          <span>Sim, correspondeu bem ao que eu imaginava.</span>
+      <div class="field">
+        <label for="match-select">
+          A página gerada correspondeu ao que você imaginava ao escrever o prompt?
         </label>
-
-        <label class="radio-option">
-          <input type="radio" name="match" value="parcial" />
-          <span>Parcialmente, atendeu em parte o que eu queria.</span>
-        </label>
-
-        <label class="radio-option">
-          <input type="radio" name="match" value="nao" />
-          <span>Não, ficou bem diferente do que eu imaginava.</span>
-        </label>
+        <select id="match-select">
+          <option value="">Selecione uma opção...</option>
+          <option value="sim">Sim, correspondeu bem ao que eu imaginava.</option>
+          <option value="parcial">Parcialmente, atendeu em parte o que eu queria.</option>
+          <option value="nao">Não, ficou bem diferente do que eu imaginava.</option>
+        </select>
       </div>
 
       <div class="field">
