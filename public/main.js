@@ -1,5 +1,7 @@
 // public/main.js
 
+const ACCESS_TOKEN = "vibe-coding-app-2025";
+
 // Base URL for the API. Since front and back are served by the same server,
 // we can use a relative path.
 const apiBase = "";
@@ -94,6 +96,7 @@ async function handleSubmitClick() {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        "x-access-token": ACCESS_TOKEN,
       },
       body: JSON.stringify({ level, prompt }),
     });
@@ -185,6 +188,7 @@ async function handleFeedbackClick() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          "x-access-token": ACCESS_TOKEN,
         },
         body: JSON.stringify({ match, comment }),
       }

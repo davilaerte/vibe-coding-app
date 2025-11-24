@@ -6,6 +6,7 @@ import {
   getSubmissionById,
 } from "../repositories/submissionRepository.mjs";
 import { generateHtmlFromPrompt } from "../services/openaiClient.mjs";
+import { checkAccessToken } from "../middleware/checkAccessToken.mjs";
 
 const MAX_PROMPT_LENGTH = 1500;
 
@@ -16,7 +17,7 @@ const router = Router();
  * Receives: { level, prompt }
  * Calls OpenAI to generate HTML, stores the submission, and returns { submissionId, html }.
  */
-router.post("/", async (req, res) => {
+router.post("/", checkAccessToken, async (req, res) => {
   try {
     const { level, prompt } = req.body;
 
@@ -72,7 +73,7 @@ router.post("/", async (req, res) => {
  * Receives: { match, comment }
  * Updates student's feedback for a given submission.
  */
-router.post("/:id/feedback", (req, res) => {
+router.post("/:id/feedback", checkAccessToken, (req, res) => {
   try {
     const submissionId = Number(req.params.id);
     const { match, comment } = req.body || {};
@@ -113,7 +114,7 @@ router.post("/:id/feedback", (req, res) => {
  * (Optional) GET /api/submissions/:id
  * Returns submission details (useful for debugging or later analysis).
  */
-router.get("/:id", (req, res) => {
+router.get("/:id", checkAccessToken, (req, res) => {
   const submissionId = Number(req.params.id);
   const submission = getSubmissionById(submissionId);
 
