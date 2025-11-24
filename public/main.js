@@ -131,6 +131,7 @@ async function handleSubmitClick() {
     }
     commentEl.value = "";
     setFeedbackStatus("");
+    feedbackBtn.disabled = false;
   } catch (err) {
     console.error(err);
     setStatus(
@@ -208,7 +209,7 @@ async function handleFeedbackClick() {
       "red"
     );
   } finally {
-    feedbackBtn.disabled = false;
+    feedbackBtn.disabled = true;
   }
 }
 

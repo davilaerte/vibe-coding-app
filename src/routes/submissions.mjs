@@ -1,12 +1,13 @@
 // src/routes/submissions.mjs
 import { Router } from "express";
-import { QUESTION_ID } from "../config/questionConfig.mjs";
 import {
   createSubmission,
-  updateFeedback,
-  getSubmission,
-} from "../storage/submissionsStore.mjs";
+  addFeedback,
+  getSubmissionById,
+} from "../repositories/submissionRepository.mjs";
 import { generateHtmlFromPrompt } from "../services/openaiClient.mjs";
+
+const MAX_PROMPT_LENGTH = 1500;
 
 const router = Router();
 
@@ -25,18 +26,15 @@ router.post("/", async (req, res) => {
         .json({ error: "Campos 'level' e 'prompt' são obrigatórios." });
     }
 
+    if (prompt.length > MAX_PROMPT_LENGTH) {
+      return res
+        .status(400)
+        .json({ error: "Descrição muito longa!" });
+    }
+
     const html = await generateHtmlFromPrompt(prompt);
 
     if (!html || typeof html !== "string") {
-      // Fallback: no usable code returned
-      const submission = createSubmission({
-        level,
-        questionId: QUESTION_ID,
-        promptText: prompt,
-        htmlGenerated: "",
-        errorFlag: true,
-      });
-
       return res.status(502).json({
         error:
           "Não foi possível gerar um código válido a partir da descrição fornecida. Tente novamente ou avise o professor.",
@@ -47,14 +45,6 @@ router.post("/", async (req, res) => {
     // Basic sanity check: ensure it looks like an HTML document
     const normalized = html.toLowerCase();
     if (!normalized.includes("<html")) {
-      const submission = createSubmission({
-        level,
-        questionId: QUESTION_ID,
-        promptText: prompt,
-        htmlGenerated: html,
-        errorFlag: true,
-      });
-
       return res.status(502).json({
         error:
           "A resposta gerada não parece representar um código coerente para a aplicação solicitada. Tente reformular sua descrição ou avise o professor.",
@@ -62,16 +52,10 @@ router.post("/", async (req, res) => {
       });
     }
 
-    const submission = createSubmission({
-      level,
-      questionId: QUESTION_ID,
-      promptText: prompt,
-      htmlGenerated: html,
-      errorFlag: false,
-    });
+    const { id } = createSubmission({ level, prompt, html });
 
     return res.json({
-      submissionId: submission.id,
+      submissionId: id,
       html,
     });
   } catch (err) {
@@ -89,22 +73,40 @@ router.post("/", async (req, res) => {
  * Updates student's feedback for a given submission.
  */
 router.post("/:id/feedback", (req, res) => {
-  const { id } = req.params;
-  const { match, comment } = req.body;
+  try {
+    const submissionId = Number(req.params.id);
+    const { match, comment } = req.body || {};
 
-  if (!match) {
+    if (!submissionId || Number.isNaN(submissionId)) {
+      return res.status(400).json({ error: "ID de submissão inválido." });
+    }
+
+    if (!match) {
+      return res.status(400).json({
+        error:
+          "Campo 'match' é obrigatório (por exemplo: 'sim', 'parcial' ou 'nao').",
+      });
+    }
+
+    const { ok } = addFeedback({
+      id: submissionId,
+      match,
+      comment: comment || "",
+    });
+
+    if (!ok) {
+      return res
+        .status(404)
+        .json({ error: "Submissão não encontrada para registrar feedback." });
+    }
+
+    return res.status(200).json({ ok: true });
+  } catch (err) {
+    console.error("Erro ao registrar feedback:", err);
     return res
-      .status(400)
-      .json({ error: "Campo 'match' é obrigatório (sim/parcial/nao)." });
+      .status(500)
+      .json({ error: "Erro interno ao registrar a avaliação." });
   }
-
-  const updated = updateFeedback(id, { match, comment });
-
-  if (!updated) {
-    return res.status(404).json({ error: "Submissão não encontrada." });
-  }
-
-  return res.json({ ok: true });
 });
 
 /**
@@ -112,8 +114,8 @@ router.post("/:id/feedback", (req, res) => {
  * Returns submission details (useful for debugging or later analysis).
  */
 router.get("/:id", (req, res) => {
-  const { id } = req.params;
-  const submission = getSubmission(id);
+  const submissionId = Number(req.params.id);
+  const submission = getSubmissionById(submissionId);
 
   if (!submission) {
     return res.status(404).json({ error: "Submissão não encontrada." });

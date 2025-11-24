@@ -121,11 +121,10 @@ button:disabled {
 
 /* Iframe preview */
 
-/* Use viewport height so it adapts to mobile and desktop */
 #preview-frame {
   width: 100%;
-  height: 55vh; /* bigger than before, uses part of the screen height */
-  max-height: 520px; /* do not explode on big desktops */
+  height: 65vh;         
+  max-height: 640px;    
   border: 1px solid #d1d5db;
   border-radius: 6px;
   margin-top: 1rem;
@@ -173,6 +172,14 @@ button:focus-visible {
   margin-top: 0.25rem;
 }
 
+#about {
+  margin-top: 2rem;
+  padding-top: 1rem;
+  border-top: 1px solid #e5e7eb;
+  font-size: 0.9rem;
+  color: #6b7280;
+  text-align: center;
+}
 
 /* Mobile-friendly adjustments */
 @media (max-width: 640px) {
@@ -208,6 +215,6 @@ button:focus-visible {
   }
 
   #preview-frame {
-    height: 50vh;
+    height: 70vh;
   }
 }
