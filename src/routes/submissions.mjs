@@ -125,7 +125,7 @@ router.get("/:id", checkAccessToken, (req, res) => {
   return res.json(submission);
 });
 
-app.get('/backup-sqlite', (req, res) => {
+router.get('/backup-sqlite', (req, res) => {
   const filePath = path.join('/data', 'vibe_coding_backup.sqlite');
 
   res.download(filePath, 'vibe_coding_backup.sqlite', (err) => {
