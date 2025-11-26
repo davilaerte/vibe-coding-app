@@ -125,4 +125,17 @@ router.get("/:id", checkAccessToken, (req, res) => {
   return res.json(submission);
 });
 
+app.get('/backup-sqlite', (req, res) => {
+  const filePath = path.join('/data', 'vibe_coding_backup.sqlite');
+
+  res.download(filePath, 'vibe_coding_backup.sqlite', (err) => {
+    if (err) {
+      console.error('Erro ao enviar arquivo:', err);
+      if (!res.headersSent) {
+        res.status(500).send('Erro ao fazer download');
+      }
+    }
+  });
+});
+
 export default router;
