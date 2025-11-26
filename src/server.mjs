@@ -21,6 +21,18 @@ app.use(express.static(publicDir));
 // API Route for submissions
 app.use("/api/submissions", submissionsRouter);
 
+app.get("/api/backup-sqlite", (req, res) => {
+  const filePath = path.join("/data", "vibe_coding_backup.sqlite");
+  res.download(filePath, "vibe_coding_backup.sqlite", (err) => {
+    if (err) {
+      console.error("Erro ao enviar arquivo:", err);
+      if (!res.headersSent) {
+        res.status(500).send("Erro ao fazer download");
+      }
+    }
+  });
+});
+
 // API Route for healthcheck
 app.get("/health", (req, res) => {
   res.json({ status: "ok" });
